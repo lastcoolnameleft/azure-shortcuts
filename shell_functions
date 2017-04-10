@@ -1,0 +1,11 @@
+## Stop all VM's in a Resource Group
+azStopRG() {
+    echo "Stopping $1";
+    az vm list -g $1 | jq '.[] | .name' | xargs -n 1 az vm stop -g $1 -n;
+}
+
+## Start all VM's in a Resource Group
+azStartRG() {
+    echo "Starting $1";
+    az vm list -g $1 | jq '.[] | .name' | xargs -n 1 az vm start -g $1 -n;
+}
