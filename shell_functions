@@ -2,8 +2,9 @@
 ## Usage:  azStopRG kubernetes
 azStopRG() {
     rg="${1:-$RESOURCE_GROUP}"
-    echo "Stopping $rg";
+    echo "Stopping VM's in $rg";
     az vmss list -g $rg | jq '.[] | .name' | xargs -n 1 az vmss start -g $rg -n;
+    echo "Stopping VMSS's in $rg";
     az vm list -g $rg | jq '.[] | .name' | xargs -n 1 az vm stop -g $rg -n;
 }
 
@@ -11,8 +12,9 @@ azStopRG() {
 ## Usage:  azStartRG kubernetes
 azStartRG() {
     rg="${1:-$RESOURCE_GROUP}"
-    echo "Starting $rg";
+    echo "Starting VM's $rg";
     az vm list -g $rg | jq '.[] | .name' | xargs -n 1 az vm start -g $rg -n;
+    echo "Starting VMSS's $rg";
     az vmss list -g $rg | jq '.[] | .name' | xargs -n 1 az vmss start -g $rg -n;
 }
 
