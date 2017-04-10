@@ -1,0 +1,2 @@
+# azure-shortcuts
+Azure Shortcuts
