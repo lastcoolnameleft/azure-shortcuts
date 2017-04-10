@@ -11,3 +11,10 @@ azStartRG() {
     echo "Starting $1";
     az vm list -g $1 | jq '.[] | .name' | xargs -n 1 az vm start -g $1 -n;
 }
+
+## Start SSH proxy to DCOS mgmt
+## Usage: dcosStartProxy my-mgmt-host.azure.com
+dcosStartProxy() {
+    echo "Creating SSH Proxy tunnel to $1";
+    sudo ssh -fNL 80:localhost:80 -p 2200 azureuser@$1;
+}
