@@ -2,20 +2,22 @@
 ## Usage:  azStopRG kubernetes
 azStopRG() {
     rg="${1:-$RESOURCE_GROUP}"
-    echo "Stopping VM's in $rg";
-    az vmss list -g $rg | jq '.[] | .name' | xargs -n 1 az vmss start -g $rg -n;
-    echo "Stopping VMSS's in $rg";
-    az vm list -g $rg | jq '.[] | .name' | xargs -n 1 az vm stop -g $rg -n;
+    echo "Processing $rg"
+    echo "Setting VMSS's size to 0";
+    az vmss list -g $rg | jq '.[] | .name' | xargs -n 1 az vmss scale --new-capacity 0 -g $rg -n;
+    echo "Stopping (deallocating) VM's";
+    az vm list -g $rg | jq '.[] | .name' | xargs -n 1 az vm deallocate -g $rg -n;
 }
 
 ## Start all VM's in a Resource Group
 ## Usage:  azStartRG kubernetes
 azStartRG() {
     rg="${1:-$RESOURCE_GROUP}"
+    echo "Processing $rg"
     echo "Starting VM's $rg";
     az vm list -g $rg | jq '.[] | .name' | xargs -n 1 az vm start -g $rg -n;
-    echo "Starting VMSS's $rg";
-    az vmss list -g $rg | jq '.[] | .name' | xargs -n 1 az vmss start -g $rg -n;
+    echo "Setting VMSS's size to 1";
+    az vmss list -g $rg | jq '.[] | .name' | xargs -n 1 az vmss scale --new-capacity 1 -g $rg -n;
 }
 
 ## Start SSH proxy to DCOS mgmt
@@ -35,23 +37,23 @@ dcosStopProxy() {
 }
 
 ## Start DCOS Cluster
-## Assumption: a DC/OS cluster is already provisioned under a RG
+## Assumption: a DC/OS cluster is already provisioned under a RG with the same name as the cluster name
 ## Usage: dcosStart dcos-resource-group
 dcosStart() {
     rg="${1:-$RESOURCE_GROUP}"
     echo "Starting DCOS for $rg";
     azStartRG $rg
-    mgmt_host=`az acs show -n sandbox-dcos -g sandbox-dcos | jq  --raw-output '.masterProfile.fqdn'`
+    mgmt_host=`az acs show -n $rg -g $rg | jq  --raw-output '.masterProfile.fqdn'`
     dcosStartProxy $mgmt_host
 }
 
 ## Stops DCOS Cluster
-## Assumption: a DC/OS cluster is already provisioned under a RG
+## Assumption: a DC/OS cluster is already provisioned under a RG with the same name as the cluster name
 ## Usage: dcosStop dcos-resource-group
 dcosStop() {
     rg="${1:-$RESOURCE_GROUP}"
     echo "Stopping DCOS for $rg";
-    mgmt_host=`az acs show -n sandbox-dcos -g sandbox-dcos | jq  --raw-output '.masterProfile.fqdn'`
+    mgmt_host=`az acs show -n $rg -g $rg | jq  --raw-output '.masterProfile.fqdn'`
     dcosStopProxy $mgmt_host
     azStopRG $rg
 }
