@@ -41,7 +41,8 @@ dcosStart() {
     rg="${1:-$RESOURCE_GROUP}"
     echo "Starting DCOS for $rg";
     azStartRG $rg
-    dcosStartProxy $rg"mgmt.southcentralus.cloudapp.azure.com"
+    mgmt_host=`az acs show -n sandbox-dcos -g sandbox-dcos | jq '.masterProfile.fqdn'`
+    dcosStartProxy $mgmt_host
 }
 
 ## Stops DCOS Cluster
@@ -50,7 +51,8 @@ dcosStart() {
 dcosStop() {
     rg="${1:-$RESOURCE_GROUP}"
     echo "Stopping DCOS for $rg";
-    dcosStopProxy $rg"mgmt.southcentralus.cloudapp.azure.com"
+    mgmt_host=`az acs show -n sandbox-dcos -g sandbox-dcos | jq '.masterProfile.fqdn'`
+    dcosStopProxy $mgmt_host
     azStopRG $rg
 }
 
