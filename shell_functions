@@ -1,33 +1,47 @@
 ## Stop all VM's in a Resource Group
 ## Usage:  azStopRG kubernetes
 azStopRG() {
-    echo "Stopping $1";
-    az vmss list -g $1 | jq '.[] | .name' | xargs -n 1 az vmss start -g $1 -n;
-    az vm list -g $1 | jq '.[] | .name' | xargs -n 1 az vm stop -g $1 -n;
+    rg="${1:-$RESOURCE_GROUP}"
+    echo "Stopping $rg";
+    az vmss list -g $rg | jq '.[] | .name' | xargs -n 1 az vmss start -g $rg -n;
+    az vm list -g $rg | jq '.[] | .name' | xargs -n 1 az vm stop -g $rg -n;
 }
 
 ## Start all VM's in a Resource Group
 ## Usage:  azStartRG kubernetes
 azStartRG() {
-    echo "Starting $1";
-    az vm list -g $1 | jq '.[] | .name' | xargs -n 1 az vm start -g $1 -n;
-    az vmss list -g $1 | jq '.[] | .name' | xargs -n 1 az vmss start -g $1 -n;
+    rg="${1:-$RESOURCE_GROUP}"
+    echo "Starting $rg";
+    az vm list -g $rg | jq '.[] | .name' | xargs -n 1 az vm start -g $rg -n;
+    az vmss list -g $rg | jq '.[] | .name' | xargs -n 1 az vmss start -g $rg -n;
 }
 
 ## Start SSH proxy to DCOS mgmt
 ## Usage: dcosStartProxy my-mgmt-host.azure.com
 dcosStartProxy() {
-    echo "Creating SSH Proxy tunnel to $1";
-    sudo ssh -fNL 80:localhost:80 -p 2200 azureuser@$1;
+    host="${1:-$DCOS_MGMT_HOST}"
+    echo "Creating SSH Proxy tunnel to $host";
+    sudo ssh -fNL 80:localhost:80 -p 2200 azureuser@$host;
+}
+
+## Start SSH proxy to DCOS mgmt
+## Usage: dcosStartProxy my-mgmt-host.azure.com
+dcosStopProxy() {
+    host="${1:-$DCOS_MGMT_HOST}"
+    echo "Killing SSH Proxy tunnel to $host";
+    ps -ef | grep ssh | grep $host | awk '{ print $2 }' | xargs sudo kill
 }
 
 dcosStart() {
-    echo "Starting DCOS for $1";
-    azStopRG $1
-    dcosStartProxy
+    rg="${1:-$RESOURCE_GROUP}"
+    echo "Starting DCOS for $rg";
+    azStopRG $rg
+    dcosStartProxy $rg"mgmt.southcentralus.cloudapp.azure.com"
 }
 
 dcosStop() {
-    echo "Stopping DCOS for $1";
-    azStopRG $1
+    rg="${1:-$RESOURCE_GROUP}"
+    echo "Stopping DCOS for $rg";
+    dcosStopProxy $rg"mgmt.southcentralus.cloudapp.azure.com"
+    azStopRG $rg
 }
