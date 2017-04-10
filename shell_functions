@@ -41,7 +41,7 @@ dcosStart() {
     rg="${1:-$RESOURCE_GROUP}"
     echo "Starting DCOS for $rg";
     azStartRG $rg
-    mgmt_host=`az acs show -n sandbox-dcos -g sandbox-dcos | jq '.masterProfile.fqdn'`
+    mgmt_host=`az acs show -n sandbox-dcos -g sandbox-dcos | jq  --raw-output '.masterProfile.fqdn'`
     dcosStartProxy $mgmt_host
 }
 
@@ -51,7 +51,7 @@ dcosStart() {
 dcosStop() {
     rg="${1:-$RESOURCE_GROUP}"
     echo "Stopping DCOS for $rg";
-    mgmt_host=`az acs show -n sandbox-dcos -g sandbox-dcos | jq '.masterProfile.fqdn'`
+    mgmt_host=`az acs show -n sandbox-dcos -g sandbox-dcos | jq  --raw-output '.masterProfile.fqdn'`
     dcosStopProxy $mgmt_host
     azStopRG $rg
 }
