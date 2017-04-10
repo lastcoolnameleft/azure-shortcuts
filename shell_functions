@@ -32,16 +32,40 @@ dcosStopProxy() {
     ps -ef | grep ssh | grep $host | awk '{ print $2 }' | xargs sudo kill
 }
 
+## Start DCOS Cluster
+## Assumption: a DC/OS cluster is already provisioned under a RG
+## Usage: dcosStart dcos-resource-group
 dcosStart() {
     rg="${1:-$RESOURCE_GROUP}"
     echo "Starting DCOS for $rg";
-    azStopRG $rg
+    azStartRG $rg
     dcosStartProxy $rg"mgmt.southcentralus.cloudapp.azure.com"
 }
 
+## Stops DCOS Cluster
+## Assumption: a DC/OS cluster is already provisioned under a RG
+## Usage: dcosStop dcos-resource-group
 dcosStop() {
     rg="${1:-$RESOURCE_GROUP}"
     echo "Stopping DCOS for $rg";
     dcosStopProxy $rg"mgmt.southcentralus.cloudapp.azure.com"
+    azStopRG $rg
+}
+
+## Start Kubernetes Cluster
+## Assumption: a Kubernetes cluster is already provisioned under a RG
+## Usage: k8sStart dcos-resource-group
+k8sStart() {
+    rg="${1:-$RESOURCE_GROUP}"
+    echo "Starting Kubernetes for $rg";
+    azStopRG $rg
+}
+
+## Stops DCOS Cluster
+## Assumption: a DC/OS cluster is already provisioned under a RG
+## Usage: dcosStop dcos-resource-group
+k8sStop() {
+    rg="${1:-$RESOURCE_GROUP}"
+    echo "Stopping Kubernetes for $rg";
     azStopRG $rg
 }
