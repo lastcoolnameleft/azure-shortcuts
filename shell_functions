@@ -3,8 +3,9 @@
 azStopRG() {
     rg="${1:-$RESOURCE_GROUP}"
     echo "Processing $rg"
-    echo "Setting VMSS's size to 0";
-    az vmss list -g $rg | jq '.[] | .name' | xargs -n 1 az vmss scale --new-capacity 0 -g $rg -n;
+    # Stopping VMSS first so that master is last to go
+    echo "Stopping (deallocating) VMSS's";
+    az vmss list -g $rg | jq '.[] | .name' | xargs -n 1 az vmss deallocate --instance-ids * -g $rg -n;
     echo "Stopping (deallocating) VM's";
     az vm list -g $rg | jq '.[] | .name' | xargs -n 1 az vm deallocate -g $rg -n;
 }
@@ -14,10 +15,11 @@ azStopRG() {
 azStartRG() {
     rg="${1:-$RESOURCE_GROUP}"
     echo "Processing $rg"
-    echo "Starting VM's $rg";
+    # Start master first
+    echo "Starting VM's";
     az vm list -g $rg | jq '.[] | .name' | xargs -n 1 az vm start -g $rg -n;
-    echo "Setting VMSS's size to 1";
-    az vmss list -g $rg | jq '.[] | .name' | xargs -n 1 az vmss scale --new-capacity 1 -g $rg -n;
+    echo "Starting VMSS's";
+    az vmss list -g $rg | jq '.[] | .name' | xargs -n 1 az vmss start --instance-ids * -g $rg -n;
 }
 
 ## Start SSH proxy to DCOS mgmt
