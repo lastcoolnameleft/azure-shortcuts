@@ -6,7 +6,7 @@ azLoginSp() {
     sp="${1:-$SERVICE_PRINCIPAL}"
     tenant="${2:-$AZURE_TENANT}"
     keychain_name="${3:-$SERVICE_PRINCIPAL_KEYWORD}"
-    az login --service-principal -u $sp -t $tenant -p `security find-generic-password -a ${USER} -s $keychain_name -w`'
+    az login --service-principal -u $sp -t $tenant -p `security find-generic-password -a ${USER} -s $keychain_name -w`
 }
 
 ## Stop all VM's in a Resource Group
@@ -81,10 +81,28 @@ k8sStart() {
 }
 
 ## Stops DCOS Cluster
-## Assumption: a DC/OS cluster is already provisioned under a RG
+## Assumption: a K8S cluster is already provisioned under a RG
 ## Usage: dcosStop dcos-resource-group
 k8sStop() {
     rg="${1:-$RESOURCE_GROUP}"
     echo "Stopping Kubernetes for $rg";
+    azStopRG $rg
+}
+
+## Start Swarm Cluster
+## Assumption: Docker swarm cluster is already provisioned under a RG
+## Usage: swarmStart swarm-resource-group
+swarmStart() {
+    rg="${1:-$RESOURCE_GROUP}"
+    echo "Starting Swarm for $rg";
+    azStartRG $rg
+}
+
+## Stops Swarm Cluster
+## Assumption: Docker swarm cluster is already provisioned under a RG
+## Usage: swarmStop swarm-resource-group
+swarmStop() {
+    rg="${1:-$RESOURCE_GROUP}"
+    echo "Stopping Swarm for $rg";
     azStopRG $rg
 }
