@@ -1,3 +1,14 @@
+
+# Login using Service Principal
+## Assumption:  OSX + password added to KeyChain
+## Usage: azLoginSp <SP uuid> <tenant uuid> <keychain name>
+azLoginSp() {
+    sp="${1:-$SERVICE_PRINCIPAL}"
+    tenant="${2:-$AZURE_TENANT}"
+    keychain_name="${3:-$SERVICE_PRINCIPAL_KEYWORD}"
+    az login --service-principal -u $sp -t $tenant -p `security find-generic-password -a ${USER} -s $keychain_name -w`'
+}
+
 ## Stop all VM's in a Resource Group
 ## Usage:  azStopRG kubernetes
 azStopRG() {
