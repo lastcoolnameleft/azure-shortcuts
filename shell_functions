@@ -1,3 +1,11 @@
+## Get VM IP from RG
+## Assumption:  Only one VM in RG
+## Usage: azGetIp <resource group>
+azGetIp {
+    rg="${1:-$RESOURCE_GROUP}"
+    echo "Processing $rg"
+    az vm list-ip-addresses -g $rg | jq --raw-output '.[0].virtualMachine.network.publicIpAddresses[0].ipAddress'
+}
 
 # Login using Service Principal
 ## Assumption:  OSX + password added to KeyChain
