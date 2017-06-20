@@ -4,7 +4,7 @@
 azGetIp() {
     rg="${1:-$RESOURCE_GROUP}"
     echo "Processing $rg"
-    az vm list-ip-addresses -g $rg | jq --raw-output '.[0].virtualMachine.network.publicIpAddresses[0].ipAddress'
+    az vm list-ip-addresses -g $rg --output json | jq --raw-output '.[0].virtualMachine.network.publicIpAddresses[0].ipAddress'
 }
 
 # Login using Service Principal
@@ -24,9 +24,9 @@ azStopRG() {
     echo "Processing $rg"
     # Stopping VMSS first so that master is last to go
     echo "Stopping (deallocating) VMSS's";
-    az vmss list -g $rg | jq '.[] | .name' | xargs -n 1 az vmss deallocate --instance-ids "*" -g $rg -n;
+    az vmss list -g $rg --output json | jq '.[] | .name' | xargs -n 1 az vmss deallocate --instance-ids "*" -g $rg -n;
     echo "Stopping (deallocating) VM's";
-    az vm list -g $rg | jq '.[] | .name' | xargs -n 1 az vm deallocate -g $rg -n;
+    az vm list -g $rg --output json | jq '.[] | .name' | xargs -n 1 az vm deallocate -g $rg -n;
 }
 
 ## Start all VM's in a Resource Group
@@ -36,9 +36,9 @@ azStartRG() {
     echo "Processing $rg"
     # Start master first
     echo "Starting VM's";
-    az vm list -g $rg | jq '.[] | .name' | xargs -n 1 az vm start -g $rg -n;
+    az vm list -g $rg --output json | jq '.[] | .name' | xargs -n 1 az vm start -g $rg -n;
     echo "Starting VMSS's";
-    az vmss list -g $rg | jq '.[] | .name' | xargs -n 1 az vmss start --instance-ids "*" -g $rg -n;
+    az vmss list -g $rg --output json | jq '.[] | .name' | xargs -n 1 az vmss start --instance-ids "*" -g $rg -n;
 }
 
 ## Start SSH proxy to DCOS mgmt
@@ -64,7 +64,7 @@ dcosStart() {
     rg="${1:-$RESOURCE_GROUP}"
     echo "Starting DCOS for $rg";
     azStartRG $rg
-    mgmt_host=`az acs show -n $rg -g $rg | jq  --raw-output '.masterProfile.fqdn'`
+    mgmt_host=`az acs show -n $rg -g $rg --output json | jq  --raw-output '.masterProfile.fqdn'`
     dcosStartProxy $mgmt_host
 }
 
@@ -74,7 +74,7 @@ dcosStart() {
 dcosStop() {
     rg="${1:-$RESOURCE_GROUP}"
     echo "Stopping DCOS for $rg";
-    mgmt_host=`az acs show -n $rg -g $rg | jq  --raw-output '.masterProfile.fqdn'`
+    mgmt_host=`az acs show -n $rg -g $rg --output json | jq  --raw-output '.masterProfile.fqdn'`
     dcosStopProxy $mgmt_host
     azStopRG $rg
 }
